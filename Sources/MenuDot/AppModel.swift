@@ -12,20 +12,28 @@ struct AppEntry: Identifiable {
     let confirmed: Bool
 }
 
+enum DiscoveryMode: String, CaseIterable {
+    case regular, batterySaver
+
+    var interval: TimeInterval { self == .regular ? 5 : 30 }
+    var title: String { self == .regular ? "Regular · 5s" : "Battery Saver · 30s" }
+}
+
 @MainActor @Observable
 final class AppModel {
     static let ownID = Bundle.main.bundleIdentifier ?? "dev.user.menudot"
     var rules: VisibilityRules
     var apps: [AppEntry] = []
     var search = ""
-    var active = false
+    var active = false { didSet { if active != oldValue { scheduleDiscovery() } } }
     var revealed = false
     var applying = false
     var scanning = false
-    var settingsVisible = false
+    var settingsVisible = false { didSet { if settingsVisible != oldValue { scheduleDiscovery() } } }
     var accessibilityAllowed = AXIsProcessTrusted()
     var discoveryMessage: String?
     var error: String?
+    var discoveryMode: DiscoveryMode
     var launchStarted: Bool
     var loginStatus = SMAppService.mainApp.status
     var loginError: String?
@@ -48,6 +56,7 @@ final class AppModel {
     }
 
     init() {
+        discoveryMode = DiscoveryMode(rawValue: defaults.string(forKey: "discoveryMode") ?? "") ?? .regular
         launchStarted = defaults.bool(forKey: "launchStarted")
         let saved = defaults.dictionary(forKey: "visibilityRules") as? [String: String] ?? [:]
         rules = VisibilityRules(assignments: saved.compactMapValues(Visibility.init(rawValue:)))
@@ -60,15 +69,28 @@ final class AppModel {
         defaults.set(metadata, forKey: "detectedIcons")
         rebuildEntries(detected: [])
         refreshApps()
-        // The menu bar host does not reliably publish item-change notifications on every
-        // macOS 27 build. A small background snapshot catches icons added by existing apps.
-        discoveryTimer = Timer.scheduledTimer(withTimeInterval: 5, repeats: true) { [weak self] _ in
+        scheduleDiscovery()
+    }
+
+    func setDiscoveryMode(_ mode: DiscoveryMode) {
+        discoveryMode = mode
+        defaults.set(mode.rawValue, forKey: "discoveryMode")
+        scheduleDiscovery()
+    }
+
+    private func scheduleDiscovery() {
+        discoveryTimer?.invalidate()
+        discoveryTimer = nil
+        guard active || settingsVisible else { return }
+        // Poll for icons added by already-running apps; launch/exit events are separate.
+        let interval = discoveryMode.interval
+        discoveryTimer = Timer.scheduledTimer(withTimeInterval: interval, repeats: true) { [weak self] _ in
             Task { @MainActor in
                 guard let self, self.active || self.settingsVisible else { return }
                 self.refreshApps()
             }
         }
-        discoveryTimer?.tolerance = 1
+        discoveryTimer?.tolerance = interval * 0.2
     }
 
     var launchAtLogin: Bool { loginStatus == .enabled || loginStatus == .requiresApproval }

@@ -44,6 +44,16 @@ struct SettingsView: View {
                     ForEach(Visibility.allCases, id: \.self) { Text($0.title).tag($0) }
                 }.labelsHidden().pickerStyle(.menu).buttonSizing(.flexible).frame(width: 160)
             }
+            HStack {
+                Text("Icon detection")
+                Spacer()
+                Picker("Icon detection", selection: Binding(
+                    get: { model.discoveryMode }, set: { model.setDiscoveryMode($0) }
+                )) {
+                    ForEach(DiscoveryMode.allCases, id: \.self) { Text($0.title).tag($0) }
+                }.labelsHidden().pickerStyle(.menu).buttonSizing(.flexible).frame(width: 160)
+                    .help("Battery Saver checks less often for icons added by running apps. Switching bars and Refresh stay immediate.")
+            }
             if !model.accessibilityAllowed {
                 VStack(alignment: .leading, spacing: 8) {
                     Text("Detect actual menu bar icons").font(.headline)
