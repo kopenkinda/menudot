@@ -34,3 +34,9 @@ The build uses `dev.<username>.menudot` as its app identifier, based on your mac
 ## macOS limitation
 
 Menu Dot uses an undocumented macOS 27 API. It may change between OS releases, and some Apple controls may disappear while switching is active. Stop or quit Menu Dot to restore them.
+
+## Why can't I just download the binary?
+
+Because I'm not paying Apple $100 a year for this shit. That's what Developer ID signing and notarization would cost, even for a free app. I could ship an unnotarized binary, but you'd still have to deal with macOS security warnings.
+
+Once the build tools above are installed, run `./scripts/run.sh` and you have the app ready. You also get all the source code, so you can see what it does and change whatever you want.
