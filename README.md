@@ -14,6 +14,12 @@ Run the installed copy. On this macOS 27 build, the exact same native status ite
 
 The build uses the installed Swift command-line tools, creates a local app, and signs it with a persistent local development certificate. The signing key lives in a separate private keychain under `~/Library/Application Support/BartenderPrototype/Signing`. The build does not change certificate trust or the default keychain. No external packages are required. You can also open `Package.swift` in Xcode.
 
+## App icon
+
+`Artwork/MenuDot.icon` is the editable Apple Icon Composer document. It contains one centered dot and uses native default, dark, and monochrome glass appearances. Open it in Icon Composer to adjust the design. The menu bar button remains a small template dot drawn by AppKit.
+
+Building the app icon requires Xcode 27 at `/Applications/Xcode.app`, or `DEVELOPER_DIR` pointing to its `Contents/Developer` directory. The build compiles the document into `Assets.car` and a fallback `.icns` before signing. It does not change the system's selected developer directory.
+
 ## Choose your icons
 
 1. The app opens paused, with your menu bar restored.

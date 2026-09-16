@@ -7,6 +7,20 @@ staging="$(mktemp -d "$PWD/build/.staging.XXXXXX")"
 trap 'rm -rf "$staging"' EXIT
 app="$staging/Menu Dot.app"
 mkdir -p "$app/Contents/MacOS"
+mkdir -p "$app/Contents/Resources"
+developer_dir="${DEVELOPER_DIR:-/Applications/Xcode.app/Contents/Developer}"
+actool="$developer_dir/usr/bin/actool"
+if [[ ! -x "$actool" ]]; then
+    print -u2 'Icon compilation requires Xcode 27. Set DEVELOPER_DIR to its Contents/Developer directory.'
+    exit 1
+fi
+"$actool" Artwork/MenuDot.icon \
+    --compile "$app/Contents/Resources" \
+    --output-format human-readable-text --notices --warnings --errors \
+    --output-partial-info-plist "$staging/icon-info.plist" \
+    --app-icon MenuDot --include-all-app-icons \
+    --enable-on-demand-resources NO --development-region en \
+    --target-device mac --minimum-deployment-target 27.0 --platform macosx
 bin_dir="$(swift build -c release --show-bin-path)"
 cp "$bin_dir/MenuDot" "$app/Contents/MacOS/MenuDot"
 cat > "$app/Contents/Info.plist" <<'PLIST'
@@ -17,6 +31,8 @@ cat > "$app/Contents/Info.plist" <<'PLIST'
 <key>CFBundleIdentifier</key><string>dev.dk.BartenderPrototype</string>
 <key>CFBundleName</key><string>Menu Dot</string>
 <key>CFBundleDisplayName</key><string>Menu Dot</string>
+<key>CFBundleIconName</key><string>MenuDot</string>
+<key>CFBundleIconFile</key><string>MenuDot</string>
 <key>CFBundlePackageType</key><string>APPL</string>
 <key>CFBundleShortVersionString</key><string>0.1.0</string>
 <key>CFBundleVersion</key><string>1</string>
