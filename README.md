@@ -1,5 +1,7 @@
 # Menu Dot
 
+![Menu Dot icon and title, with actual menu bar captures before and after starting switching.](Artwork/readme/banner.png)
+
 A small native Swift menu bar manager for macOS 27. Assign icons to Main, Secondary, Both, or Always hidden. No Dock icon, external packages, or background helper. This is a source-only project: build and sign your own copy.
 
 > [!WARNING]
