@@ -7,7 +7,7 @@ import AppKit
         app.setActivationPolicy(.accessory)
         let backend = MenuBarVisibility()
         guard backend.isAvailable else { print("Private API unavailable"); exit(1) }
-        let fixtureID = "dev.dk.BartenderTestIcon"
+        let fixtureID = "dev.user.menudot.testicon"
         let allowed = Set(NSWorkspace.shared.runningApplications.compactMap(\.bundleIdentifier))
         var failed = false
         DispatchQueue.main.asyncAfter(deadline: .now() + 1) {

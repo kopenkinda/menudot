@@ -6,22 +6,20 @@ cd "${0:A:h:h}"
 # On this macOS 27 build, the menu bar host preserves our allowed status item
 # only when the app runs from /Applications, not the project or ~/Applications.
 app="/Applications/Menu Dot.app"
-legacy="/Applications/Bartender Prototype.app"
-for existing in "$app" "$legacy"; do
-    if [[ -e "$existing" ]]; then
-        identifier="$(/usr/libexec/PlistBuddy -c 'Print CFBundleIdentifier' "$existing/Contents/Info.plist")"
-        [[ "$identifier" == "dev.dk.BartenderPrototype" ]] || { print -u2 'A different app occupies the install path.'; exit 1; }
-    fi
-done
+identifier="$(/usr/libexec/PlistBuddy -c 'Print CFBundleIdentifier' 'build/Menu Dot.app/Contents/Info.plist')"
+if [[ -e "$app" ]]; then
+    installed_id="$(/usr/libexec/PlistBuddy -c 'Print CFBundleIdentifier' "$app/Contents/Info.plist")"
+    [[ "$installed_id" == "$identifier" ]] || { print -u2 'A different app occupies the install path.'; exit 1; }
+fi
 staging="$(mktemp -d /Applications/.MenuDot.XXXXXX)"
 trap 'rm -rf "$staging"' EXIT
 ditto 'build/Menu Dot.app' "$staging/Menu Dot.app"
 codesign --verify --strict "$staging/Menu Dot.app"
 
 # Normal termination restores icons before replacing the installed bundle.
-swift -e '
+MENUDOT_BUNDLE_ID="$identifier" swift -e '
 import AppKit
-let apps = NSRunningApplication.runningApplications(withBundleIdentifier: "dev.dk.BartenderPrototype")
+let apps = NSRunningApplication.runningApplications(withBundleIdentifier: ProcessInfo.processInfo.environment["MENUDOT_BUNDLE_ID"]!)
 for app in apps { app.terminate() }
 let deadline = Date().addingTimeInterval(5)
 while apps.contains(where: { !$0.isTerminated }) && Date() < deadline {
@@ -33,6 +31,5 @@ if apps.contains(where: { !$0.isTerminated }) {
 }
 '
 if [[ -d "$app" ]]; then mv "$app" "$staging/previous.app"; fi
-if [[ -d "$legacy" ]]; then mv "$legacy" "$staging/legacy.app"; fi
 mv "$staging/Menu Dot.app" "$app"
 open "$app"

@@ -14,7 +14,7 @@ struct AppEntry: Identifiable {
 
 @MainActor @Observable
 final class AppModel {
-    static let ownID = Bundle.main.bundleIdentifier ?? "dev.dk.BartenderPrototype"
+    static let ownID = Bundle.main.bundleIdentifier ?? "dev.user.menudot"
     var rules: VisibilityRules
     var apps: [AppEntry] = []
     var search = ""

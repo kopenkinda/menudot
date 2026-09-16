@@ -58,7 +58,7 @@ actor MenuBarDiscovery {
         AXUIElementGetPid(element, &pid)
         if pid > 0, pid != agentPID {
             guard let app = NSRunningApplication(processIdentifier: pid),
-                  let id = app.bundleIdentifier, id != "dev.dk.BartenderPrototype" else { return }
+                  let id = app.bundleIdentifier, id != Bundle.main.bundleIdentifier else { return }
             if id == "com.apple.TextInputMenuAgent" {
                 found["system:4"] = DetectedMenuItem(key: "system:4", name: "Input menu", detail: "macOS control", iconPath: nil)
                 return

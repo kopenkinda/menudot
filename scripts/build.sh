@@ -28,7 +28,7 @@ cat > "$app/Contents/Info.plist" <<'PLIST'
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0"><dict>
 <key>CFBundleExecutable</key><string>MenuDot</string>
-<key>CFBundleIdentifier</key><string>dev.dk.BartenderPrototype</string>
+<key>CFBundleIdentifier</key><string>dev.user.menudot</string>
 <key>CFBundleName</key><string>Menu Dot</string>
 <key>CFBundleDisplayName</key><string>Menu Dot</string>
 <key>CFBundleIconName</key><string>MenuDot</string>
@@ -41,6 +41,15 @@ cat > "$app/Contents/Info.plist" <<'PLIST'
 <key>NSHighResolutionCapable</key><true/>
 </dict></plist>
 PLIST
+python3 - "$app/Contents/Info.plist" <<'PYID'
+import getpass, plistlib, re, sys
+from pathlib import Path
+path = Path(sys.argv[1])
+info = plistlib.loads(path.read_bytes())
+username = re.sub(r"[^a-z0-9-]", "-", getpass.getuser().lower()) or "user"
+info["CFBundleIdentifier"] = f"dev.{username}.menudot"
+path.write_bytes(plistlib.dumps(info))
+PYID
 python3 scripts/sign.py "$app"
 destination="$PWD/build/Menu Dot.app"
 if [[ -d "$destination" ]]; then mv "$destination" "$staging/previous.app"; fi

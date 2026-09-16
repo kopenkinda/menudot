@@ -2,6 +2,7 @@
 """Stable local development signing. No trust-store or default-keychain changes."""
 import hashlib
 import os
+import plistlib
 from pathlib import Path
 import secrets
 import shlex
@@ -19,7 +20,7 @@ def run(*args, **kwargs):
 
 
 os.umask(0o077)
-state = Path.home() / "Library/Application Support/BartenderPrototype/Signing"
+state = Path.home() / "Library/Application Support/MenuDot/Signing"
 state.mkdir(parents=True, exist_ok=True)
 state.chmod(0o700)
 keychain = state / "development.keychain-db"
@@ -39,7 +40,7 @@ prompt = no
 distinguished_name = name
 x509_extensions = extensions
 [name]
-CN = Bartender Prototype Local Development
+CN = Menu Dot Local Development
 [extensions]
 basicConstraints = critical,CA:false
 keyUsage = critical,digitalSignature
@@ -50,10 +51,10 @@ subjectKeyIdentifier = hash
                 "-days", "3650", "-config", str(config), "-keyout", str(temp / "key.pem"),
                 "-out", str(temp / "certificate.pem"))
             run("openssl", "x509", "-in", str(temp / "certificate.pem"), "-outform", "der", "-out", str(certificate))
-            secret_env = {**os.environ, "BARTENDER_P12_PASSWORD": password}
+            secret_env = {**os.environ, "MENUDOT_P12_PASSWORD": password}
             run("openssl", "pkcs12", "-export", "-inkey", str(temp / "key.pem"),
                 "-in", str(temp / "certificate.pem"), "-out", str(temp / "identity.p12"),
-                "-passout", "env:BARTENDER_P12_PASSWORD", "-keypbe", "PBE-SHA1-3DES",
+                "-passout", "env:MENUDOT_P12_PASSWORD", "-keypbe", "PBE-SHA1-3DES",
                 "-certpbe", "PBE-SHA1-3DES", "-macalg", "sha1", env=secret_env)
             run("security", "create-keychain", "-p", password, str(keychain))
             run("security", "unlock-keychain", "-p", password, str(keychain))
@@ -72,7 +73,8 @@ else:
 
 # Pin the certificate itself, not just an app identifier that someone else could claim.
 fingerprint = hashlib.sha1(certificate.read_bytes()).hexdigest()
-requirement = f'designated => identifier "dev.dk.BartenderPrototype" and certificate leaf = H"{fingerprint}"'
+identifier = plistlib.loads((Path(sys.argv[1]) / "Contents/Info.plist").read_bytes())["CFBundleIdentifier"]
+requirement = f'designated => identifier "{identifier}" and certificate leaf = H"{fingerprint}"'
 try:
     run("security", "unlock-keychain", "-p", password, str(keychain))
     run("codesign", "--force", "--sign", fingerprint, "--keychain", str(keychain),

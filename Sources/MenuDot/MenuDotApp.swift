@@ -39,7 +39,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
         NSApp.mainMenu = mainMenu
         model = AppModel()
         statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.squareLength)
-        statusItem.autosaveName = "BartenderPrototype"
+        statusItem.autosaveName = "MenuDot"
         statusItem.isVisible = true
         let dot = NSImage(size: NSSize(width: 18, height: 18), flipped: false) { _ in
             NSColor.black.setFill()
@@ -89,7 +89,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
         menu.addItem(toggleItem)
         menu.addItem(.separator())
         for (title, action) in [("Settings…", #selector(showSettings)),
-                                ("Restore all icons", #selector(restore)),
+                                (model.active || model.applying ? "Stop" : "Start", #selector(startOrStop)),
                                 ("Quit Menu Dot", #selector(quit))] {
             let item = NSMenuItem(title: title, action: action, keyEquivalent: "")
             item.target = self
@@ -127,6 +127,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
             guard self?.window?.isVisible == false else { return }
             self?.window = nil
         }
+    }
+
+    @objc private func startOrStop() {
+        if model.active || model.applying { model.restore() }
+        else { model.start() }
     }
 
     @objc private func toggle() { model.toggle() }
