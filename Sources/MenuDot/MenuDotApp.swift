@@ -59,7 +59,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
         for name in [NSWorkspace.didLaunchApplicationNotification, NSWorkspace.didTerminateApplicationNotification] {
             center.addObserver(self, selector: #selector(workspaceChanged), name: name, object: nil)
         }
-        center.addObserver(self, selector: #selector(restore), name: NSWorkspace.willSleepNotification, object: nil)
+        for name in [NSWorkspace.willSleepNotification, NSWorkspace.screensDidSleepNotification,
+                     NSWorkspace.sessionDidResignActiveNotification, NSWorkspace.didWakeNotification,
+                     NSWorkspace.screensDidWakeNotification, NSWorkspace.sessionDidBecomeActiveNotification] {
+            center.addObserver(self, selector: #selector(sessionChanged(_:)), name: name, object: nil)
+        }
         if model.launchStarted { model.start() }
         showSettings()
     }
@@ -135,7 +139,17 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
     }
 
     @objc private func toggle() { model.toggle() }
-    @objc private func restore() { model.restore() }
+    @objc private func sessionChanged(_ notification: Notification) {
+        switch notification.name {
+        case NSWorkspace.willSleepNotification: model.suspend(for: "sleep")
+        case NSWorkspace.didWakeNotification: model.resume(for: "sleep")
+        case NSWorkspace.screensDidSleepNotification: model.suspend(for: "display")
+        case NSWorkspace.screensDidWakeNotification: model.resume(for: "display")
+        case NSWorkspace.sessionDidResignActiveNotification: model.suspend(for: "session")
+        case NSWorkspace.sessionDidBecomeActiveNotification: model.resume(for: "session")
+        default: break
+        }
+    }
     @objc private func quit() { NSApp.terminate(nil) }
 
     @objc private func showSettings() {

@@ -47,6 +47,7 @@ final class AppModel {
     private var metadata: [String: [String: String]]
     private var update: DispatchWorkItem?
     private var discoveryTimer: Timer?
+    private var suspensions: Set<String> = []
 
     var available: Bool { backend.isAvailable }
     var status: String {
@@ -81,7 +82,7 @@ final class AppModel {
     private func scheduleDiscovery() {
         discoveryTimer?.invalidate()
         discoveryTimer = nil
-        guard active || settingsVisible else { return }
+        guard suspensions.isEmpty, active || settingsVisible else { return }
         // Poll for icons added by already-running apps; launch/exit events are separate.
         let interval = discoveryMode.interval
         discoveryTimer = Timer.scheduledTimer(withTimeInterval: interval, repeats: true) { [weak self] _ in
@@ -122,6 +123,7 @@ final class AppModel {
     }
 
     func refreshApps() {
+        guard suspensions.isEmpty else { return }
         runningIDs = Set(NSWorkspace.shared.runningApplications.compactMap(\.bundleIdentifier))
         accessibilityAllowed = AXIsProcessTrusted()
         guard accessibilityAllowed else {
@@ -217,6 +219,23 @@ final class AppModel {
         onChange?()
     }
 
+    // Suspension releases the macOS assertion without changing the user's Start/Stop choice.
+    func suspend(for reason: String) {
+        suspensions.insert(reason)
+        update?.cancel()
+        update = nil
+        backend.restore()
+        applying = false
+        scheduleDiscovery()
+        onChange?()
+    }
+
+    func resume(for reason: String) {
+        guard suspensions.remove(reason) != nil, suspensions.isEmpty else { return }
+        scheduleDiscovery()
+        workspaceChanged()
+    }
+
     func workspaceChanged() {
         update?.cancel()
         let work = DispatchWorkItem { [weak self] in
@@ -229,6 +248,7 @@ final class AppModel {
     }
 
     private func apply() {
+        guard active, suspensions.isEmpty else { return }
         error = nil
         applying = true
         onChange?()
