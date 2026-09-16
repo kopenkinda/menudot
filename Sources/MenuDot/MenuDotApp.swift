@@ -2,7 +2,7 @@ import AppKit
 import SwiftUI
 
 @main
-struct BartenderApp {
+struct MenuDotApp {
     @MainActor static func main() {
         let app = NSApplication.shared
         let delegate = AppDelegate()
@@ -32,7 +32,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
         settingsItem.target = self
         appMenu.addItem(settingsItem)
         appMenu.addItem(.separator())
-        appMenu.addItem(withTitle: "Quit Bartender", action: #selector(NSApplication.terminate(_:)), keyEquivalent: "q")
+        appMenu.addItem(withTitle: "Quit Menu Dot", action: #selector(NSApplication.terminate(_:)), keyEquivalent: "q")
         let appMenuItem = NSMenuItem()
         appMenuItem.submenu = appMenu
         mainMenu.addItem(appMenuItem)
@@ -85,7 +85,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
         menu.addItem(.separator())
         for (title, action) in [("Settings…", #selector(showSettings)),
                                 ("Restore all icons", #selector(restore)),
-                                ("Quit Bartender", #selector(quit))] {
+                                ("Quit Menu Dot", #selector(quit))] {
             let item = NSMenuItem(title: title, action: action, keyEquivalent: "")
             item.target = self
             menu.addItem(item)
@@ -98,8 +98,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
         // description changes; the switch itself never belongs to either group.
         if !statusItem.isVisible { statusItem.isVisible = true }
         statusItem.button?.toolTip = model.active
-            ? "Bartender: switch to \(model.revealed ? "Main" : "Secondary"); right-click for settings"
-            : "Bartender is paused. Click to choose icons."
+            ? "Menu Dot: switch to \(model.revealed ? "Main" : "Secondary"); right-click for settings"
+            : "Menu Dot is paused. Click to choose icons."
     }
 
     @objc private func clicked() {
@@ -135,7 +135,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
             let window = NSWindow(contentRect: NSRect(x: 0, y: 0, width: 630, height: 730),
                                   styleMask: [.titled, .closable, .miniaturizable, .resizable],
                                   backing: .buffered, defer: false)
-            window.title = "Bartender prototype"
+            window.title = "Menu Dot"
             window.delegate = self
             window.contentView = NSHostingView(rootView: SettingsView(model: model))
             window.isReleasedWhenClosed = false

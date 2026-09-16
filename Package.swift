@@ -2,10 +2,10 @@
 import PackageDescription
 
 let package = Package(
-    name: "Bartender",
+    name: "MenuDot",
     platforms: [.macOS("27.0")],
-    products: [.executable(name: "Bartender", targets: ["Bartender"])],
+    products: [.executable(name: "MenuDot", targets: ["MenuDot"])],
     targets: [
-        .executableTarget(name: "Bartender")
+        .executableTarget(name: "MenuDot")
     ]
 )

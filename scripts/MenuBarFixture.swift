@@ -6,7 +6,7 @@ import AppKit
     func applicationDidFinishLaunching(_ notification: Notification) {
         item = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
         item.button?.title = "BTEST"
-        item.button?.setAccessibilityLabel("Bartender test icon")
+        item.button?.setAccessibilityLabel("Menu Dot test icon")
         let menu = NSMenu()
         menu.addItem(withTitle: "Test icon is working", action: nil, keyEquivalent: "")
         menu.addItem(withTitle: "Quit test icon", action: #selector(NSApplication.terminate(_:)), keyEquivalent: "q")

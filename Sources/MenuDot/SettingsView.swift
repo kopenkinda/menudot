@@ -42,7 +42,7 @@ struct SettingsView: View {
             if !model.accessibilityAllowed {
                 VStack(alignment: .leading, spacing: 8) {
                     Text("Detect actual menu bar icons").font(.headline)
-                    Text("Accessibility access lets Bartender identify icons in the menu bar, instead of listing every running process. Saved groups still work without this access. Detection reads icon owners and labels, not your documents.")
+                    Text("Accessibility access lets Menu Dot identify icons in the menu bar, instead of listing every running process. Saved groups still work without this access. Detection reads icon owners and labels, not your documents.")
                         .font(.callout).foregroundStyle(.secondary)
                     Button("Detect menu bar icons…") { model.requestDiscoveryAccess() }
                 }.padding(12).background(.quaternary, in: RoundedRectangle(cornerRadius: 8))

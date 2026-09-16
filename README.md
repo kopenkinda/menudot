@@ -1,4 +1,4 @@
-# Bartender prototype
+# Menu Dot
 
 A native Swift menu bar manager for macOS 27. Keep separate Main and Secondary groups and switch between them by clicking the menu bar dot.
 
@@ -8,7 +8,7 @@ A native Swift menu bar manager for macOS 27. Keep separate Main and Secondary g
 ./scripts/run.sh
 ```
 
-`run.sh` builds, installs into `/Applications/Bartender Prototype.app`, and launches it. Updating a running copy quits it normally first, restoring all icons. `build.sh` alone only creates the build artifact.
+`run.sh` builds, installs into `/Applications/Menu Dot.app`, and launches it. Updating a running copy quits it normally first, restoring all icons. `build.sh` alone only creates the build artifact.
 
 Run the installed copy. On this macOS 27 build, the exact same native status item disappears under a visibility restriction when launched from the project folder, `/tmp`, or `~/Applications`, but stays visible from `/Applications`. AppKit and SwiftUI registration both showed this location-dependent behavior. The sandboxed menu bar host's owner lookup is the suspected cause; the location workaround was verified directly.
 
@@ -17,11 +17,11 @@ The build uses the installed Swift command-line tools, creates a local app, and 
 ## Choose your icons
 
 1. The app opens paused, with your menu bar restored.
-2. Click **Detect menu bar icons…** and enable **Bartender Prototype** in macOS Accessibility settings. Return to the app and click Refresh if needed. Switching from an older ad-hoc build may require one fresh approval. Subsequent builds reuse the same certificate and designated requirement.
+2. Click **Detect menu bar icons…** and enable **Menu Dot** in macOS Accessibility settings. Return to the app and click Refresh if needed. Switching from an older ad-hoc build may require one fresh approval. Subsequent builds reuse the same certificate and designated requirement.
 3. Assign detected icons to **Main**, **Secondary**, **Both**, or **Always hidden**.
 4. Press **Start switching**. Click its centered menu bar dot to switch bars.
 
-Main and Secondary replace each other. Both keeps an icon visible in either bar. Always hidden appears in neither group. Clock, Control Center, and Bartender's own menu bar button are always included in the allowlist. Clock and Control Center cannot be assigned to a group.
+Main and Secondary replace each other. Both keeps an icon visible in either bar. Always hidden appears in neither group. Clock, Control Center, and Menu Dot's own menu bar button are always included in the allowlist. Clock and Control Center cannot be assigned to a group.
 
 The app has no Dock icon. Right-click the dot for Settings, switching, Restore all icons, or Quit. Settings is also available with Command-comma while its window is active. When paused, clicking the dot opens settings. Reopening the app also brings settings back, providing a recovery path if the dot is unavailable.
 
@@ -63,13 +63,13 @@ Hiding uses an undocumented `MenuBarClientCore` API resolved at runtime. If it i
 - macOS controls available space, the notch, and overflow. This prototype switches the original menu bar items inline; it does not create a second row or rearrange icons.
 - Accessibility behavior can change between macOS builds. Detection reports failures instead of falling back to a list of unrelated processes.
 
-The prototype does not register for login, change another app's preferences, or restart system processes. Its own settings live in `dev.dk.BartenderPrototype`.
+The prototype does not register for login, change another app's preferences, or restart system processes. Its own settings live in `dev.dk.BartenderPrototype`. This internal identifier, status-item autosave name, and local signing identity retain their original names to preserve existing choices, menu bar placement, and Accessibility approval.
 
-The visibility assertion belongs to the process. macOS is expected to release it on process exit, and the app explicitly invalidates it on normal quit. If it stops responding, force quit **Bartender Prototype**. The hiding mechanism does not write permanent menu bar configuration.
+The visibility assertion belongs to the process. macOS is expected to release it on process exit, and the app explicitly invalidates it on normal quit. If it stops responding, force quit **Menu Dot**. The hiding mechanism does not write permanent menu bar configuration.
 
 ## Code ownership
 
-- `BartenderApp.swift`: AppKit lifecycle, menu bar button and menu, settings window.
+- `MenuDotApp.swift`: AppKit lifecycle, menu bar button and menu, settings window.
 - `AppModel.swift`: saved choices, new-icon default, discovery scheduling, current group.
 - `MenuBarDiscovery.swift`: bounded Accessibility snapshots on a background actor.
 - `VisibilityRules.swift`: group membership and default assignment.
