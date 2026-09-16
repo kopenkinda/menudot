@@ -6,21 +6,29 @@ struct SettingsView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
             HStack {
-                VStack(alignment: .leading, spacing: 5) {
-                    Text("Two bars. One click.").font(.title2.weight(.semibold))
-                    Text("Click the menu bar dot to switch between Main and Secondary.")
-                        .foregroundStyle(.secondary)
-                }
+                Text("Launch at login")
                 Spacer()
+                Toggle("Launch at login", isOn: Binding(
+                    get: { model.launchAtLogin }, set: { model.setLaunchAtLogin($0) }
+                )).labelsHidden().toggleStyle(.switch)
+            }
+            if model.loginStatus == .requiresApproval {
+                Button("Allow in Login Items…") { model.openLoginSettings() }
+            }
+            if let error = model.loginError {
+                Text(error).foregroundStyle(.red).font(.callout)
             }
             HStack {
-                Circle().fill(model.active ? Color.green : Color.secondary).frame(width: 7, height: 7)
-                Text(model.status).font(.callout)
+                Text("Launch state")
                 Spacer()
-                if model.active {
-                    Button(model.revealed ? "Switch to Main" : "Switch to Secondary") { model.toggle() }
-                }
+                Picker("Launch state", selection: Binding(
+                    get: { model.launchStarted }, set: { model.setLaunchStarted($0) }
+                )) {
+                    Text("Started").tag(true)
+                    Text("Stopped").tag(false)
+                }.labelsHidden().pickerStyle(.menu).buttonSizing(.flexible).frame(width: 160)
             }
+
             if !model.available {
                 Text("Switching is unavailable on this macOS build.").foregroundStyle(.red)
             }
@@ -28,16 +36,13 @@ struct SettingsView: View {
                 Text(error).foregroundStyle(.red).font(.callout).textSelection(.enabled)
             }
             HStack {
-                VStack(alignment: .leading, spacing: 3) {
-                    Text("New menu bar icons")
-                    Text("Existing choices stay where they are.").font(.caption).foregroundStyle(.secondary)
-                }
+                Text("New menu bar icons")
                 Spacer()
                 Picker("Default for new menu bar icons", selection: Binding(
                     get: { model.defaultGroup }, set: { model.setDefault($0) }
                 )) {
                     ForEach(Visibility.allCases, id: \.self) { Text($0.title).tag($0) }
-                }.labelsHidden().frame(width: 160)
+                }.labelsHidden().pickerStyle(.menu).buttonSizing(.flexible).frame(width: 160)
             }
             if !model.accessibilityAllowed {
                 VStack(alignment: .leading, spacing: 8) {
@@ -68,29 +73,16 @@ struct SettingsView: View {
                             .foregroundStyle(.secondary).padding(.vertical, 24)
                     }
                     ForEach(confirmed) { row($0) }
-                    let previous = model.apps.filter { !$0.confirmed && matches($0.name) }
-                    if !previous.isEmpty {
-                        DisclosureGroup("Earlier choices · not verified as menu bar icons (\(previous.count))") {
-                            ForEach(previous) { row($0) }
-                        }.font(.callout).padding(.vertical, 12)
-                    }
                 }.padding(.horizontal, 14).padding(.bottom, 8)
             }.background(.background, in: RoundedRectangle(cornerRadius: 10))
 
-            VStack(alignment: .leading, spacing: 5) {
-                Text("Both keeps an icon on Main and Secondary. Always hidden appears in neither. Right-click the menu bar dot for Settings or Restore all icons.")
-                Text("Icons from the same app move together. App artwork identifies the owner; it may differ from its menu bar icon. Clock and Control Center stay visible and cannot be assigned to a group.")
-                Text("macOS 27 may hide additional Apple controls while switching is active. Restore all icons releases the session.")
-            }.font(.caption).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
             HStack {
-                Button("Restore all icons") { model.restore() }
-                    .keyboardShortcut(.escape, modifiers: [])
-                    .disabled(!model.active && !model.applying)
                 Spacer()
-                if model.active {
-                    Text("Choices save automatically").font(.caption).foregroundStyle(.secondary)
+                if model.active || model.applying {
+                    Button("Stop") { model.restore() }
+                        .keyboardShortcut(.escape, modifiers: [])
                 } else {
-                    Button("Start switching") { model.start() }.buttonStyle(.borderedProminent)
+                    Button("Start") { model.start() }.buttonStyle(.borderedProminent)
                         .disabled(!model.available || model.scanning || !model.apps.contains(where: \.confirmed))
                 }
             }

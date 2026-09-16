@@ -1,6 +1,7 @@
 import AppKit
 import ApplicationServices
 import Observation
+import ServiceManagement
 
 struct AppEntry: Identifiable {
     let id: String
@@ -25,6 +26,9 @@ final class AppModel {
     var accessibilityAllowed = AXIsProcessTrusted()
     var discoveryMessage: String?
     var error: String?
+    var launchStarted: Bool
+    var loginStatus = SMAppService.mainApp.status
+    var loginError: String?
     var defaultGroup: Visibility
     var onChange: (() -> Void)?
     private let backend = MenuBarVisibility()
@@ -44,6 +48,7 @@ final class AppModel {
     }
 
     init() {
+        launchStarted = defaults.bool(forKey: "launchStarted")
         let saved = defaults.dictionary(forKey: "visibilityRules") as? [String: String] ?? [:]
         rules = VisibilityRules(assignments: saved.compactMapValues(Visibility.init(rawValue:)))
         defaultGroup = Visibility(rawValue: defaults.string(forKey: "newIconGroup") ?? "") ?? .visible
@@ -64,6 +69,28 @@ final class AppModel {
             }
         }
         discoveryTimer?.tolerance = 1
+    }
+
+    var launchAtLogin: Bool { loginStatus == .enabled || loginStatus == .requiresApproval }
+
+    func refreshLoginStatus() { loginStatus = SMAppService.mainApp.status }
+
+    func setLaunchAtLogin(_ enabled: Bool) {
+        loginError = nil
+        do {
+            if enabled { try SMAppService.mainApp.register() }
+            else { try SMAppService.mainApp.unregister() }
+        } catch {
+            loginError = "Could not change launch at login: \(error.localizedDescription)"
+        }
+        refreshLoginStatus()
+    }
+
+    func openLoginSettings() { SMAppService.openSystemSettingsLoginItems() }
+
+    func setLaunchStarted(_ started: Bool) {
+        launchStarted = started
+        defaults.set(started, forKey: "launchStarted")
     }
 
     func requestDiscoveryAccess() {

@@ -60,12 +60,17 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
             center.addObserver(self, selector: #selector(workspaceChanged), name: name, object: nil)
         }
         center.addObserver(self, selector: #selector(restore), name: NSWorkspace.willSleepNotification, object: nil)
+        if model.launchStarted { model.start() }
         showSettings()
     }
 
     func applicationShouldHandleReopen(_ sender: NSApplication, hasVisibleWindows flag: Bool) -> Bool {
         if model != nil { showSettings() }
         return false
+    }
+
+    func applicationDidBecomeActive(_ notification: Notification) {
+        model?.refreshLoginStatus()
     }
 
     func applicationWillTerminate(_ notification: Notification) {
@@ -129,6 +134,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
     @objc private func quit() { NSApp.terminate(nil) }
 
     @objc private func showSettings() {
+        model.refreshLoginStatus()
         model.settingsVisible = true
         model.refreshApps()
         if window == nil {
