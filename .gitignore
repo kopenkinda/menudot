@@ -1,0 +1,10 @@
+.build/
+build/
+.swiftpm/
+.DS_Store
+
+# Local signing material
+*.keychain-db
+*.p12
+*.pfx
+*.pem
