@@ -2,6 +2,9 @@
 
 A small native Swift menu bar manager for macOS 27. Assign icons to Main, Secondary, Both, or Always hidden. No Dock icon, external packages, or background helper. This is a source-only project: build and sign your own copy.
 
+> [!WARNING]
+> This application was built entirely with gpt-6-astra. Use it at your own risk.
+
 ## Use
 
 - Click the dot to switch between Main and Secondary while started.
