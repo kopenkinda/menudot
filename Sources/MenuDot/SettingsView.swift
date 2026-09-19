@@ -123,6 +123,14 @@ struct SettingsView: View {
                 )) {
                     ForEach(Visibility.allCases, id: \.self) { Text($0.title).tag($0) }
                 }.labelsHidden().frame(width: 150)
+                Button {
+                    model.removeEntry(app.id)
+                } label: {
+                    Image(systemName: "trash")
+                }
+                .buttonStyle(.borderless)
+                .accessibilityLabel("Remove \(app.name) from the list")
+                .help("Forget this icon and its saved group. It will return if detected again.")
             }.padding(.vertical, 9)
             Divider()
         }

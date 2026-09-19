@@ -14,6 +14,7 @@ A small native Swift menu bar manager for macOS 27. Assign icons to Main, Second
 - Sleep and inactive sessions temporarily restore icons. Switching resumes on return if it was started, preserving the selected bar.
 - Hold Command and drag menu bar icons to rearrange them using native macOS behavior.
 - In Settings, choose the default group for new icons, launch at login, and whether to launch Started or Stopped.
+- Click the trash button beside an icon in Settings to remove its saved entry and group. If the icon is detected again, it returns using the default group for new icons.
 - Icon detection offers Regular polling every 5 seconds or Battery Saver every 30 seconds. App launch/exit events and manual refresh still update immediately. No polling runs while stopped with settings closed.
 
 Enable Accessibility when prompted to detect menu bar icons. Icons belonging to the same app move together. Clock and Control Center cannot be hidden.

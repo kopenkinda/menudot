@@ -192,6 +192,17 @@ final class AppModel {
         if active { apply() }
     }
 
+    func removeEntry(_ key: String) {
+        guard !VisibilityRules.isProtected(key) else { return }
+        rules.assignments.removeValue(forKey: key)
+        metadata.removeValue(forKey: key)
+        lastDetected.remove(key)
+        saveRules()
+        defaults.set(metadata, forKey: "detectedIcons")
+        rebuildEntries(detected: lastDetected)
+        if active { apply() }
+    }
+
     private func saveRules() { defaults.set(rules.assignments.mapValues(\.rawValue), forKey: "visibilityRules") }
 
     func start() {
